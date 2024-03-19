@@ -17,6 +17,11 @@ player_game_data_df = pd.read_csv("NBA Data/Player Game Data.csv")
 # make copy of dataframes
 mvp_ranking_df = player_game_data_df.copy()
 
+"""
+#######################################################################################
+This section is preserved as original code that was written. It works, but the code
+that will be used is written in for loops. 
+#######################################################################################
 # calculate player share of PAR (points, assist, rebounds) for the season
 
 # calculate team totals of PAR
@@ -70,6 +75,36 @@ mvp_ranking_df["season_avg_AST"] = mvp_ranking_df.groupby(
 
 mvp_ranking_df["season_avg_REB"] = mvp_ranking_df.groupby(
     ["PLAYER_ID"])["REB"].transform("mean")
+"""
+
+# define a list with the columns we wan to calculate for each player's share
+share_columns = [
+    "PTS",
+    "AST",
+    "REB"
+]
+
+# loop through each column in shared_columns
+for column in share_columns: 
+    # calculate the total team PAR in each game
+    mvp_ranking_df["team_" + column] = mvp_ranking_df.groupby(
+        ["TEAM_ID", "GAME_ID"])[column].transform("sum")
+    
+    # calculate the share of PAR each player is responsible for
+    mvp_ranking_df["share_of_team_" + column] = (
+        mvp_ranking_df[column] / mvp_ranking_df["team_" + column])
+    
+    # calculate each players average share of PAR for the season
+    mvp_ranking_df["season_avg_share_of_" + column] = mvp_ranking_df.groupby(
+        ["PLAYER_ID"])["share_of_team_" + column].transform("mean")
+    
+    # calculate each player's total share of PAR for the seasion
+    mvp_ranking_df["season_total_share_of_" + column] = mvp_ranking_df.groupby(
+        ["PLAYER_ID"])["share_of_team_" + column].transform("sum")
+    
+    # calculate each players average PAR for the seasion
+    mvp_ranking_df["season_avg_" + column] = mvp_ranking_df.groupby(
+        ["PLAYER_ID"])[column].transform("mean")
 
 
 ######################## START OF DEBUGGING SPACE #####################################
